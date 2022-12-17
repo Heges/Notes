@@ -25,8 +25,7 @@ namespace Notes.Identity
         {
             AppConfiguration = config;
         }
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddIdentity<AppUser, IdentityRole>(config =>
@@ -46,23 +45,22 @@ namespace Notes.Identity
 
             services.AddIdentityServer()
                 .AddAspNetIdentity<AppUser>()
-                .AddInMemoryApiResources(Configuration.ApiResources)
-                .AddInMemoryIdentityResources(Configuration.IdentityResources)
-                .AddInMemoryApiScopes(Configuration.ApiScopes)
-                .AddInMemoryClients(Configuration.Clients)
+                .AddInMemoryApiResources(Configuration.ApiResources())
+                .AddInMemoryIdentityResources(Configuration.IdentityResources())
+                .AddInMemoryApiScopes(Configuration.ApiScopes())
+                .AddInMemoryClients(Configuration.Clients())
                 .AddDeveloperSigningCredential();
 
             services.ConfigureApplicationCookie(config =>
             {
                 config.Cookie.Name = "Notes.Identity.Cookie";
-                config.LoginPath = "/Auth/Login";
-                config.LogoutPath = "/Auth/Logout";
+                //config.LoginPath = "/Auth/Login";
+                //config.LogoutPath = "/Auth/Logout";
             });
 
             services.AddControllersWithViews();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())

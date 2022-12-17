@@ -1,0 +1,21 @@
+﻿@model List<Note>
+@{
+    Layout = "_Layout";
+}
+
+@foreach (var note in Model)
+{
+    <div class="item">
+        <div class="imageContainer">
+            <img />
+        </div>
+        <div class="text">
+            <input type="hidden" value="@note.Id" />
+            <a asp-controller="Home" asp-action="GetNote" asp-route-id="@note.Id">@note.Title</a>
+            <a asp-controller="Home" asp-action="EditNote" asp-route-id="@note.Id">Edit Note</a>
+            <a asp-controller="Home" asp-action="DeleteNote" asp-route-id="@note.Id">Delete Note</a>
+        </div>
+        
+    </div>
+}
+<a asp-controller="Home" asp-action="CreateNote">Create new</a>

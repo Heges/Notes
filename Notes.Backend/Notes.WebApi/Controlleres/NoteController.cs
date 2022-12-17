@@ -10,6 +10,7 @@ using Notes.WebApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Notes.WebApi.Controlleres
@@ -31,6 +32,7 @@ namespace Notes.WebApi.Controlleres
                 UserId = UserId
             };
             var vm = await Mediator.Send(query);
+
             return Ok(vm);
         }
 

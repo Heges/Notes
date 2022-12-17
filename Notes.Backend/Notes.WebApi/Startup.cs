@@ -15,6 +15,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Notes.WebApi.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Notes.WebApi
 {
@@ -27,8 +28,6 @@ namespace Notes.WebApi
             Configuration = config;
         }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
 
@@ -40,29 +39,31 @@ namespace Notes.WebApi
             services.AddApplication();
             services.AddPersistence(Configuration);
             services.AddControllers();
-            services.AddCors(options =>
+            services.AddCors(config =>
             {
-                options.AddPolicy("AllowAll", policy =>
-                {
-                    policy.AllowAnyHeader();
-                    policy.AllowAnyMethod();
-                    policy.AllowAnyOrigin();
-                });
+                config.AddPolicy("DefaultPolicy",
+                    builder =>
+                    builder
+                    .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader());
             });
-            services.AddAuthentication(config => 
-            {
-                config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-                .AddJwtBearer("Bearer", options => 
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, config =>
                 {
-                    options.Authority = "http://localhost:34170";
-                    options.Audience = "NotesWebAPI";
-                    options.RequireHttpsMetadata = false;
+                    config.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ClockSkew = TimeSpan.FromMinutes(1),
+                        ValidateAudience = false
+                    };
+                    config.IncludeErrorDetails = true;
+
+                    config.Authority = "https://localhost:5001";
+                    config.Audience = "https://localhost:5001";
                 });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -72,7 +73,9 @@ namespace Notes.WebApi
             app.UseCustomExceptionHandler();
             app.UseRouting();
             app.UseHttpsRedirection();
-            app.UseCors("AllowAll");
+
+            app.UseCors("DefaultPolicy");
+
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>

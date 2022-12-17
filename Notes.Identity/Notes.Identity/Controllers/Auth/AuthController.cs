@@ -1,4 +1,5 @@
 ﻿using IdentityServer4.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Notes.Identity.Models;
@@ -26,8 +27,10 @@ namespace Notes.Identity.Controllers.Auth
         }
 
         [HttpGet]
-        public IActionResult Login(string returnUrl)
+        public async Task<IActionResult> Login(string returnUrl)
         {
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+
             var viewModel = new LoginViewModel()
             {
                 ReturnUrl = returnUrl
@@ -48,7 +51,7 @@ namespace Notes.Identity.Controllers.Auth
                 ModelState.AddModelError(string.Empty, "User not found");
                 return View(model);
             }
-            var result = await _signManager.PasswordSignInAsync(model.Username, model.Password, false, false);//persistent cookie
+            var result = await _signManager.PasswordSignInAsync(model.Username, model.Password, false, false);
             if (result.Succeeded)
             {
                 return Redirect(model.ReturnUrl);
@@ -64,7 +67,6 @@ namespace Notes.Identity.Controllers.Auth
             {
                 ReturnUrl = returnUrl
             };
-            //return View(returnUrl);
             return View(viewModel);
         }
 
@@ -85,7 +87,7 @@ namespace Notes.Identity.Controllers.Auth
             if (result.Succeeded)
             {
                 await _signManager.SignInAsync(user, false);
-                return Redirect(viewModel.ReturnUrl);
+                return Redirect(viewModel.ReturnUrl ?? "~/");
             }
             ModelState.AddModelError(string.Empty, "Error occurred");
             return View(viewModel);
